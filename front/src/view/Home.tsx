@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 
 const Home: React.FC = () => {
   const navigate = useNavigate();
+
   return (
     <div>
       <h1>메인 페이지</h1>

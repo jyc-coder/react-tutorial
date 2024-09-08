@@ -4,36 +4,31 @@ import "../css/login.css";
 import axios from "axios";
 
 const Login: React.FC = () => {
-  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
-  const handleUsernameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setUsername(event.target.value);
+  const handleEmailChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setEmail(event.target.value);
   };
 
   const handlePasswordChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setPassword(event.target.value);
   };
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     try {
-      axios
-        .post(
-          "http://localhost:3000/login",
-          {
-            username,
-            password,
-          },
-          {
-            withCredentials: true,
-          }
-        )
+      await axios
+        .post("http://localhost:3000/login", {
+          email,
+          password,
+        })
         .then(() => {
           alert(`로그인 성공했습니다.`);
           navigate("/");
         });
-    } catch {
-      alert("로그인 실패했습니다.");
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (err: any) {
+      alert(err.response.data.message);
     }
   };
 
@@ -48,11 +43,7 @@ const Login: React.FC = () => {
         <div className="labelWrapper">
           <label>
             <p className="labelName">UserName:</p>
-            <input
-              type="text"
-              value={username}
-              onChange={handleUsernameChange}
-            />
+            <input type="text" value={email} onChange={handleEmailChange} />
           </label>
 
           <label>
@@ -65,11 +56,11 @@ const Login: React.FC = () => {
           </label>
         </div>
         <div className="buttonWrapper">
-          <button type="button" onClick={handleLogin}>
-            로그인
-          </button>
           <button type="button" onClick={handleSignup}>
             회원가입
+          </button>
+          <button type="button" onClick={handleLogin}>
+            로그인
           </button>
         </div>
       </form>
