@@ -3,7 +3,7 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const saltRounds = 10;
 
-const userSchema = mongoose.Schema({
+const UserSchema = mongoose.Schema({
   name: {
     type: String,
     maxlength: 20,
@@ -13,22 +13,22 @@ const userSchema = mongoose.Schema({
     // 띄어쓰기 제거
     trim: true,
     // 중복 허용 X
-    unique: 1,
+    unique: true,
   },
   password: {
     type: String,
     minlength: 12,
+    required: true,
   },
-  token: {
-    type: String,
-  },
-  tokenExp: {
-    type: Number,
-  },
+  sessions: [
+    {
+      createdAt: { type: Date, required: true },
+    },
+  ],
 });
 
 // 비밀번호 비교 메소드
-userSchema.methods.comparePassword = function (password) {
+UserSchema.methods.comparePassword = function (password) {
   return new Promise((resolve, reject) => {
     bcrypt.compare(password, this.password, (err, isMatch) => {
       if (err) return reject(err);
@@ -38,7 +38,7 @@ userSchema.methods.comparePassword = function (password) {
 };
 
 // save 전에 비밀번호 암호화
-userSchema.pre("save", function (next) {
+UserSchema.pre("save", function (next) {
   const user = this;
   if (user.isModified("password")) {
     bcrypt.genSalt(saltRounds, function (err, salt) {
@@ -55,7 +55,7 @@ userSchema.pre("save", function (next) {
 });
 
 // 토큰 생성 메소드
-userSchema.methods.generateToken = function () {
+UserSchema.methods.generateToken = function () {
   const user = this;
   // jsonwebtoken을 통해 token 생성
   const token = jwt.sign(user._id.toHexString(), "secretToken");
@@ -65,7 +65,7 @@ userSchema.methods.generateToken = function () {
 };
 
 // 토큰 복호화 메소드
-userSchema.statics.findByToken = function (token) {
+UserSchema.statics.findByToken = function (token) {
   const user = this;
   return new Promise((resolve, reject) => {
     jwt.verify(token, "secretToken", (err, decoded) => {
@@ -85,6 +85,4 @@ userSchema.statics.findByToken = function (token) {
   });
 };
 
-const User = mongoose.model("User", userSchema);
-
-module.exports = { User };
+module.exports = mongoose.models.User || mongoose.model("User", UserSchema);
